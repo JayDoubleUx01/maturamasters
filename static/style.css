@@ -1453,3 +1453,48 @@ input[type="checkbox"] {
         grid-template-columns: 1fr;
     }
 }
+
+/* =======================
+   📘 VOCABULARY TILES
+   ======================= */
+
+.vocab-tile {
+    text-align: center;
+}
+
+.vocab-tile h3 {
+    margin-top: 0;
+    font-size: 22px;
+    color: var(--primary-dark);
+}
+
+.vocab-translation {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+.vocab-image {
+    width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 14px;
+    margin: 12px 0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.vocab-audio {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 600;
+}

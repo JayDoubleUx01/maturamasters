@@ -7,21 +7,35 @@
 
     <input name="title" placeholder="Tytuł" required>
 
+    <!-- subject -->
     <select name="subject" required>
+        <option value="">-- Wybierz przedmiot --</option>
         {% for p in PRZEDMIOTY %}
         <option value="{{ p }}">{{ p }}</option>
         {% endfor %}
     </select>
+
+    <!-- zakres -->
     <select name="zakres" required>
+        <option value="">-- Wybierz zakres --</option>
         {% for z in ZAKRESY %}
         <option value="{{ z }}">{{ z }}</option>
         {% endfor %}
     </select>
 
-    <select name="dzial" id="dzialSelect" required></select>
+    <!-- dzial -->
+    <select name="dzial" id="dzialSelect" required>
+        <option value="">-- Wybierz dział --</option>
+    </select>
 
+    <!-- vocab_category -->
+    <select name="vocab_category" id="vocabCategory" style="display:none" required>
+        <option value="">-- Wybierz kategorię --</option>
+    </select>
 
+    <!-- material_type -->
     <select name="material_type" id="typeSelect" required>
+        <option value="">-- Wybierz typ materiału --</option>
         <option value="NOTE">Notatka</option>
         <option value="VOCABULARY">Słówka</option>
     </select>
@@ -47,18 +61,31 @@
     const dzialSelect = document.getElementById("dzialSelect");
 
     function updateDzialy() {
-        const subject = subjectSelect.value;
-        dzialSelect.innerHTML = "";
+    const subject = subjectSelect.value;
+    dzialSelect.innerHTML = '<option value="">-- Wybierz dział --</option>';
 
-        if (!DZIALY_PRZEDMIOTOW[subject]) return;
+    if (!subject) return;
 
-        DZIALY_PRZEDMIOTOW[subject].forEach(dzial => {
+    const dzialy = DZIALY_PRZEDMIOTOW[subject];
+    if (!dzialy) return;
+
+    if (Array.isArray(dzialy)) {
+        dzialy.forEach(dzial => {
             const opt = document.createElement("option");
             opt.value = dzial;
             opt.textContent = dzial;
             dzialSelect.appendChild(opt);
         });
+        return;
     }
+
+    Object.keys(dzialy).forEach(dzial => {
+        const opt = document.createElement("option");
+        opt.value = dzial;
+        opt.textContent = dzial;
+        dzialSelect.appendChild(opt);
+    });
+}
 
     subjectSelect.addEventListener("change", updateDzialy);
 
@@ -81,13 +108,71 @@
         div.innerHTML = `
             <input name="word_en[]" placeholder="EN">
             <input name="word_pl[]" placeholder="PL">
-            <input name="category[]" placeholder="Dział">
             <input name="image_url[]" placeholder="URL obrazka">
             <input name="audio_url[]" placeholder="URL audio">
             <hr>
         `;
         document.getElementById("vocabList").appendChild(div);
     }
+const vocabCategory = document.getElementById("vocabCategory");
+const titleInput = document.querySelector('input[name="title"]');
+
+function updateTitleIfVocabulary() {
+    if (
+        subjectSelect.value === "angielski" &&
+        dzialSelect.value === "Vocabulary" &&
+        typeSelect.value === "VOCABULARY" &&
+        vocabCategory.value
+    ) {
+        titleInput.value = `Słownictwo - ${vocabCategory.value}`;
+    }
+}
+
+dzialSelect.addEventListener("change", () => {
+    vocabCategory.style.display = "none";
+    vocabCategory.innerHTML = '<option value="">-- Wybierz kategorię --</option>';
+
+    if (
+        subjectSelect.value === "angielski" &&
+        dzialSelect.value === "Vocabulary"
+    ) {
+        const categories = [
+            "Personal details",
+            "Feelings and emotions"
+        ];
+
+        categories.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.textContent = c;
+            vocabCategory.appendChild(opt);
+        });
+
+        vocabCategory.style.display = "block";
+    }
+});
+
+typeSelect.addEventListener("change", () => {
+    if (typeSelect.value !== "VOCABULARY") {
+        vocabCategory.style.display = "none";
+        vocabCategory.innerHTML = "";
+    } else {
+        updateTitleIfVocabulary();
+    }
+});
+
+vocabCategory.addEventListener("change", updateTitleIfVocabulary);
+
+    dzialSelect.addEventListener("change", () => {
+    if (
+        subjectSelect.value === "angielski" &&
+        dzialSelect.value === "Vocabulary"
+    ) {
+        typeSelect.value = "VOCABULARY";
+        noteBox.style.display = "none";
+        vocabBox.style.display = "block";
+    }
+});
 </script>
 
 

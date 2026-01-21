@@ -1,15 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>{{ material.title }}</h2>
+<h2>Pełne słownictwo - język angielski</h2>
 
-{% if material.material_type == "NOTE" %}
-    {{ material.note.content | safe }}
-
-{% elif material.material_type == "VOCABULARY" %}
+{% for letter, words in grouped.items() %}
+<h3>{{ letter }}</h3>
 
 <div class="cards">
-    {% for v in material.vocabulary_items %}
+    {% for v in words %}
     <div class="card vocab-tile">
 
         <h3>{{ v.word_en }}</h3>
@@ -23,10 +21,14 @@
         <audio controls src="{{ v.audio_url }}" class="vocab-audio"></audio>
         {% endif %}
 
+        {% if v.category %}
+        <div class="badge">🧠 {{ v.category }}</div>
+        {% endif %}
+
     </div>
     {% endfor %}
 </div>
 
-{% endif %}
+{% endfor %}
 
 {% endblock %}

@@ -19,8 +19,9 @@ db.init_app(app)
 # =======================
 # INIT DB
 # =======================
-with app.app_context():
-    db.create_all()
+if os.environ.get("RENDER") != "true":
+    with app.app_context():
+        db.create_all()
 
 # =======================
 # DATA
@@ -50,15 +51,18 @@ DZIALY_PRZEDMIOTOW = {
         "Wypowiedź argumentacyjna",
         "Gramatyka i język"
     ],
-    'angielski': [
-        "Reading",
-        "Listening",
-        "Use of English",
-        "Writing",
-        "Grammar",
-        "Vocabulary",
-        "Picture description"
-    ]
+    'angielski': {
+        "Reading": [],
+        "Listening": [],
+        "Use of English": [],
+        "Writing": [],
+        "Grammar": [],
+        "Vocabulary": [
+            "Personal details",
+            "Feelings and emotions"
+        ],
+        "Picture description": []
+    }
 }
 
 PRZEDMIOTY = list(DZIALY_PRZEDMIOTOW.keys())
@@ -199,6 +203,28 @@ def lekcje():
         days=days,
         role=user.role,
         students=students
+    )
+
+
+@app.route("/vocabulary")
+@login_required
+def vocabulary_all():
+    words = (
+        VocabularyItem.query
+        .order_by(VocabularyItem.word_en.asc())
+        .all()
+    )
+
+    from collections import defaultdict
+    grouped = defaultdict(list)
+
+    for w in words:
+        first_letter = w.word_en[0].upper()
+        grouped[first_letter].append(w)
+
+    return render_template(
+        "vocabulary_all.html",
+        grouped=grouped
     )
 
 
@@ -973,12 +999,30 @@ def resolve_task(zadanie_id):
 @app.route("/materials")
 @login_required
 def materials():
-    materials = (
-        Material.query
-        .order_by(Material.created_at.desc())
-        .all()
+    materials = Material.query.all()
+
+    from collections import defaultdict
+
+    tree = defaultdict(
+        lambda: defaultdict(
+            lambda: defaultdict(
+                lambda: defaultdict(list)
+            )
+        )
     )
-    return render_template("materials.html", materials=materials)
+
+    for m in materials:
+        if m.material_type == "VOCABULARY":
+            categories = {
+                v.category or "Inne"
+                for v in m.vocabulary_items
+            }
+            for cat in categories:
+                tree[m.subject][m.zakres][m.dzial][cat].append(m)
+        else:
+            tree[m.subject][m.zakres][m.dzial]["_"].append(m)
+
+    return render_template("materials.html", tree=tree)
 
 
 @app.route("/materials/add", methods=["GET", "POST"])
@@ -1025,7 +1069,8 @@ def add_material():
             words_pl = request.form.getlist("word_pl[]")
             images = request.form.getlist("image_url[]")
             audios = request.form.getlist("audio_url[]")
-            categories = request.form.getlist("category[]")
+
+            vocab_category = request.form.get("vocab_category")
 
             for i in range(len(words_en)):
                 if not words_en[i] or not words_pl[i]:
@@ -1037,7 +1082,7 @@ def add_material():
                     word_pl=words_pl[i],
                     image_url=images[i] or None,
                     audio_url=audios[i] or None,
-                    category=categories[i] or None
+                    category=vocab_category
                 )
                 db.session.add(vocab)
 
@@ -1053,7 +1098,6 @@ def add_material():
         ZAKRESY=ZAKRESY,
         DZIALY_PRZEDMIOTOW=DZIALY_PRZEDMIOTOW
     )
-
 
 
 @app.route("/materials/<int:material_id>")

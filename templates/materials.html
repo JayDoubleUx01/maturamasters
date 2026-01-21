@@ -7,15 +7,67 @@
 <a href="{{ url_for('add_material') }}" class="btn">➕ Dodaj materiał</a>
 {% endif %}
 
-<ul class="material-list">
-    {% for m in materials %}
-    <li>
-        <a href="{{ url_for('material_view', material_id=m.id) }}">
-            <strong>{{ m.title }}</strong><br>
-            {{ m.subject }} • {{ m.zakres }} • {{ m.dzial }} • {{ m.material_type }}
-        </a>
-    </li>
-    {% endfor %}
-</ul>
+<div class="tree">
 
+{% for subject, ranges in tree.items() %}
+<button class="tree-item level-subject">📘 {{ subject }}</button>
+<div class="tree-children">
+
+    {% for zakres, dzialy in ranges.items() %}
+    <button class="tree-item level-range">📂 {{ zakres }}</button>
+    <div class="tree-children">
+
+        {% for dzial, categories in dzialy.items() %}
+        <button class="tree-item level-section">📄 {{ dzial }}</button>
+        <div class="tree-children">
+
+            {% for category, materials in categories.items() %}
+
+                {% if category != "_" %}
+                <button class="tree-item">🧠 {{ category }}</button>
+                <div class="tree-children">
+                {% endif %}
+
+                    {% for m in materials %}
+                    <a href="{{ url_for('material_view', material_id=m.id) }}"
+                       class="task-card">
+                        <div class="task-main">
+                            <strong>{{ m.title }}</strong>
+                            <div class="task-meta">
+                                {{ m.subject }} • {{ m.zakres }} • {{ m.dzial }}
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+
+                {% if category != "_" %}
+                </div>
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+        {% endfor %}
+
+    </div>
+    {% endfor %}
+
+</div>
+{% endfor %}
+
+</div>
+<script>
+document.querySelectorAll(".tree-item").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const next = btn.nextElementSibling;
+        if (!next || !next.classList.contains("tree-children")) return;
+
+        btn.classList.toggle("active");
+    });
+});
+</script>
 {% endblock %}
+
