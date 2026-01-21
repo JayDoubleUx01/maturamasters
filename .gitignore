@@ -1,6 +1,7 @@
+.idea/
+.venv/
 *.db
 *.sqlite
 *.sqlite3
 __pycache__/
 .env
-.idea/
