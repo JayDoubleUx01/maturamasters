@@ -136,10 +136,7 @@ dzialSelect.addEventListener("change", () => {
         subjectSelect.value === "angielski" &&
         dzialSelect.value === "Vocabulary"
     ) {
-        const categories = [
-            "Personal details",
-            "Feelings and emotions"
-        ];
+        const categories = DZIALY_PRZEDMIOTOW["angielski"]["Vocabulary"];
 
         categories.forEach(c => {
             const opt = document.createElement("option");

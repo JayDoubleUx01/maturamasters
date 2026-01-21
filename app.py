@@ -59,7 +59,12 @@ DZIALY_PRZEDMIOTOW = {
         "Grammar": [],
         "Vocabulary": [
             "Personal details",
-            "Feelings and emotions"
+            "Periods of life",
+            "General appearance",
+            "Clothes",
+            "Personality",
+            "Feelings and emotions",
+            "Abilites and interests"
         ],
         "Picture description": []
     }
