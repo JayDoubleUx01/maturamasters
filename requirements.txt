@@ -1,4 +1,4 @@
+Werkzeug
 Flask
 Flask-SQLAlchemy
 SQLAlchemy
-Werkzeug
