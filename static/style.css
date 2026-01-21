@@ -1078,7 +1078,7 @@ input[type="checkbox"] {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 8px;
 }
 
 .nav-item {
@@ -1497,4 +1497,59 @@ input[type="checkbox"] {
     color: var(--primary-dark);
     font-size: 13px;
     font-weight: 600;
+}
+
+.open-answer-textarea {
+    width: 100%;
+    min-height: 180px;
+    padding: 14px;
+    font-size: 15px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    resize: vertical;
+    margin-bottom: 12px;
+}
+.open-answer-preview {
+    background: #fdf2f8;
+    border-radius: 18px;
+    padding: 18px 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+}
+
+/* =======================
+   ✍️ OPEN TASK – FIX
+   ======================= */
+
+.open-answer-box {
+    margin-top: 16px;
+}
+
+.open-answer-textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: 18px 20px;
+    font-size: 15px;
+    border-radius: 18px;
+    border: 2px solid #e9d5ff;
+    background: #fff;
+    resize: vertical;
+    transition: 0.25s;
+}
+
+.open-answer-textarea:focus {
+    outline: none;
+    border-color: #d946ef;
+    box-shadow: 0 0 0 4px rgba(217,70,239,0.18);
+}
+
+.open-answer-box .btn {
+    margin-top: 14px;
+}
+
+.answers-preview {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

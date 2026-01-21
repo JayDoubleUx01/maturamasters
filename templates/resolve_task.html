@@ -3,17 +3,17 @@
 
 <a class="task-breadcrumb">
     {% if zadanie.przedmiot == 'matematyka' %}
-        Matematyka
+    Matematyka
     {% elif zadanie.przedmiot == 'polski' %}
-        Język polski
+    Język polski
     {% elif zadanie.przedmiot == 'angielski' %}
-        Język angielski
+    Język angielski
     {% endif %}
     >
     {% if zadanie.zakres == 'podstawa' %}
-        Zakres podstawowy
+    Zakres podstawowy
     {% elif zadanie.zakres == 'rozszerzenie' %}
-        Zakres rozszerzony
+    Zakres rozszerzony
     {% endif %}
     >
     {{ zadanie.dzial }}
@@ -24,9 +24,9 @@
 <!-- ===== META AUTORA ===== -->
 <div class="task-meta">
     <img
-        src="{{ url_for('static', filename=autor_avatar) }}"
-        alt="Avatar autora"
-        class="task-author-avatar"
+            src="{{ url_for('static', filename=autor_avatar) }}"
+            alt="Avatar autora"
+            class="task-author-avatar"
     >
     <div class="task-author-info">
         <div class="task-author-name">
@@ -40,8 +40,8 @@
 
 <!-- ===== GŁÓWNY BLOK ZADANIA ===== -->
 {% if zalacznik %}
-    {% set file = zalacznik.nazwa_pliku.lower() %}
-    {% set path = 'uploads/zadania/' ~ zalacznik.nazwa_pliku %}
+{% set file = zalacznik.nazwa_pliku.lower() %}
+{% set path = 'uploads/zadania/' ~ zalacznik.nazwa_pliku %}
 {% endif %}
 
 <div class="task-box {% if zalacznik and (file.endswith('.png') or file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.webp')) %}task-split{% endif %}">
@@ -54,24 +54,44 @@
 
         <!-- ===== TRYB ROZWIĄZYWANIA ===== -->
         {% if not is_closed %}
+
+        {% if zadanie.typ_zadania == 'zamkniete' %}
+        <!-- ===== ZADANIE ZAMKNIĘTE ===== -->
         <div class="answers">
             {% for key, text in {
-                'A': zadanie.odp_a,
-                'B': zadanie.odp_b,
-                'C': zadanie.odp_c,
-                'D': zadanie.odp_d
+            'A': zadanie.odp_a,
+            'B': zadanie.odp_b,
+            'C': zadanie.odp_c,
+            'D': zadanie.odp_d
             }.items() %}
-                {% if text %}
-                <label class="answer-option" data-answer="{{ key }}">
-                    <input type="radio" name="answer" value="{{ key }}">
-                    <span><strong>{{ key }}.</strong> {{ text }}</span>
-                </label>
-                {% endif %}
+            {% if text %}
+            <label class="answer-option" data-answer="{{ key }}">
+                <input type="radio" name="answer" value="{{ key }}">
+                <span><strong>{{ key }}.</strong> {{ text }}</span>
+            </label>
+            {% endif %}
             {% endfor %}
         </div>
 
         <button id="submit-btn" class="btn">Zatwierdź odpowiedź</button>
+
+        {% else %}
+        <!-- ===== ZADANIE OTWARTE ===== -->
+        <div class="open-answer-box">
+        <textarea
+            name="answer"
+            class="open-answer-textarea"
+            placeholder="Twoja odpowiedź…"
+        >{{ assignment.odpowiedz_usera or '' }}</textarea>
+
+            <button id="save-open-answer" class="btn">
+                💾 Zapisz odpowiedź
+            </button>
+        </div>
         {% endif %}
+
+        {% endif %}
+
 
         <!-- ===== TRYB PODGLĄDU (ZAMKNIĘTE) ===== -->
         {% if is_closed %}
@@ -80,40 +100,50 @@
 
             <ul class="answers-list">
                 {% for key, text in {
-                    'A': zadanie.odp_a,
-                    'B': zadanie.odp_b,
-                    'C': zadanie.odp_c,
-                    'D': zadanie.odp_d
+                'A': zadanie.odp_a,
+                'B': zadanie.odp_b,
+                'C': zadanie.odp_c,
+                'D': zadanie.odp_d
                 }.items() %}
-                    {% if text %}
-                    <li class="
+                {% if text %}
+                <li class="
                         {% if zadanie.poprawna_odp == key %}correct-answer{% endif %}
                         {% if assignment.odpowiedz_usera == key and zadanie.poprawna_odp != key %}wrong-answer{% endif %}
                     ">
-                        <strong>{{ key }}.</strong> {{ text }}
+                    <strong>{{ key }}.</strong> {{ text }}
 
-                        {% if zadanie.poprawna_odp == key %}
-                            <span class="badge-correct">✔ poprawna</span>
-                        {% endif %}
-
-                        {% if assignment.odpowiedz_usera == key %}
-                            <span class="badge-user">👤 Twoja odpowiedź</span>
-                        {% endif %}
-                    </li>
+                    {% if zadanie.poprawna_odp == key %}
+                    <span class="badge-correct">✔ poprawna</span>
                     {% endif %}
+
+                    {% if assignment.odpowiedz_usera == key %}
+                    <span class="badge-user">👤 Twoja odpowiedź</span>
+                    {% endif %}
+                </li>
+                {% endif %}
                 {% endfor %}
             </ul>
         </div>
         {% endif %}
     </div>
 
+    {% if is_closed and zadanie.typ_zadania != 'zamkniete' %}
+    <div class="answers-preview">
+        <h3>📄 Twoja odpowiedź</h3>
+        <div class="open-answer-preview">
+            {{ assignment.odpowiedz_usera or "Brak odpowiedzi" }}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- ===== PRAWA STRONA: OBRAZ ===== -->
-    {% if zalacznik and (file.endswith('.png') or file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.webp')) %}
+    {% if zalacznik and (file.endswith('.png') or file.endswith('.jpg') or file.endswith('.jpeg') or
+    file.endswith('.webp')) %}
     <div class="task-right">
         <img
-            src="{{ url_for('static', filename=path) }}"
-            alt="Załącznik do zadania"
-            class="task-image"
+                src="{{ url_for('static', filename=path) }}"
+                alt="Załącznik do zadania"
+                class="task-image"
         >
     </div>
     {% endif %}
