@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ material.title }}</h2>
+
+{% if material.material_type == "NOTE" %}
+    {{ material.note.content | safe }}
+
+{% elif material.material_type == "VOCABULARY" %}
+    {% for v in material.vocabulary_items %}
+        <div class="vocab-card">
+            <strong>{{ v.word_en }}</strong> – {{ v.word_pl }}<br>
+            {% if v.image_url %}
+                <img src="{{ v.image_url }}" width="150">
+            {% endif %}
+            {% if v.audio_url %}
+                <audio controls src="{{ v.audio_url }}"></audio>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

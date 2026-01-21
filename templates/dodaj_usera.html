@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Dodaj ucznia</h2>
+
+<form method="post">
+    <label>Imię</label>
+    <input type="text" name="imie" required>
+
+    <label>Nazwisko</label>
+    <input type="text" name="nazwisko" required>
+
+    <label>Rola</label>
+    <select name="role" required>
+        <option value="">-- wybierz --</option>
+        <option value="student">Uczeń</option>
+        <option value="teacher">Nauczyciel</option>
+    </select>
+
+    <label>Login</label>
+    <input type="text" name="login" required>
+
+    <label>Hasło startowe</label>
+    <input type="password" name="password" required>
+
+    <button type="submit">Zapisz</button>
+</form>
+{% endblock %}

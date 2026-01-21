@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css"
+/>
+
+<h2>Mój profil</h2>
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+{% if success %}<p class="success">{{ success }}</p>{% endif %}
+
+<form method="POST"
+      class="profile-form"
+      enctype="multipart/form-data">
+
+    <!-- AVATAR -->
+    <div class="avatar-box">
+        <img
+                id="avatarPreview"
+                src="{{ url_for('static', filename=current_user_avatar) }}?v={{ current_user.id }}"
+                class="avatar">
+
+        <button type="button" id="changeAvatarBtn">
+            Zmień avatar
+        </button>
+
+        <!-- TYLKO DO WYBORU PLIKU -->
+        <input
+                type="file"
+                id="avatarInput"
+                accept="image/png, image/jpeg"
+                hidden
+        >
+
+        <!-- TYLKO TEN INPUT JEST WYSYŁANY -->
+        <input
+                type="file"
+                name="avatar"
+                id="avatarFinal"
+                hidden
+        >
+    </div>
+
+    <label>Login (nie można zmienić)</label>
+    <input type="text" value="{{ user.login }}" disabled>
+
+    <label>Imię</label>
+    <input type="text" name="imie" value="{{ user.imie }}" required>
+
+    <label>Nazwisko</label>
+    <input type="text" name="nazwisko" value="{{ user.nazwisko }}" required>
+
+    <hr>
+
+    <h3>Zmiana hasła</h3>
+
+    <label>Stare hasło</label>
+    <input type="password" name="old_password">
+
+    <label>Nowe hasło</label>
+    <input type="password" name="password">
+
+    <label>Powtórz nowe hasło</label>
+    <input type="password" name="password_confirm">
+
+    <button type="submit">Zapisz zmiany</button>
+</form>
+
+<!-- MODAL -->
+<div class="modal" id="cropModal">
+    <div class="modal-content">
+        <h3>Ustaw kadr avatara</h3>
+
+        <img id="cropImage">
+
+        <div class="modal-actions">
+            <button type="button" id="cancelCrop">Anuluj</button>
+            <button type="button" id="confirmCrop">Zapisz</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
+
+<script>
+    let cropper;
+
+    const changeBtn  = document.getElementById("changeAvatarBtn");
+    const input      = document.getElementById("avatarInput");
+    const modal      = document.getElementById("cropModal");
+    const cropImg    = document.getElementById("cropImage");
+    const preview    = document.getElementById("avatarPreview");
+    const finalInput = document.getElementById("avatarFinal");
+
+    changeBtn.onclick = () => input.click();
+
+    input.onchange = () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            cropImg.src = reader.result;
+            modal.style.display = "flex";
+
+            if (cropper) cropper.destroy();
+
+            cropper = new Cropper(cropImg, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: "move",
+                autoCropArea: 0.9,
+                zoomable: true,
+                movable: true,
+                cropBoxResizable: false
+            });
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    document.getElementById("cancelCrop").onclick = () => {
+        if (cropper) cropper.destroy();
+        modal.style.display = "none";
+    };
+
+    document.getElementById("confirmCrop").onclick = () => {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 256,
+            height: 256
+        });
+
+        canvas.toBlob(blob => {
+            const croppedFile = new File(
+                [blob],
+                "avatar.png",
+                { type: "image/png" }
+            );
+
+            const dt = new DataTransfer();
+            dt.items.add(croppedFile);
+            finalInput.files = dt.files;
+
+            document.querySelector("form.profile-form").submit();
+        });
+    };
+</script>
+
+<style>
+    .avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-box {
+        margin-bottom: 20px;
+    }
+
+    /* MODAL */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        max-width: 420px;
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    .modal-content img {
+        max-width: 100%;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+</style>
+
+{% endblock %}

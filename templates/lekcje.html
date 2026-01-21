@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📅 Tydzień zajęć</h2>
+
+<div class="week-calendar">
+
+    <!-- HEADER -->
+    <div class="week-header">
+        <div class="time-col"></div>
+        {% for day in days %}
+        <div class="day-col">
+            {{ day.strftime('%a') }}<br>
+            <span>{{ day.strftime('%d.%m') }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- BODY -->
+    {% for hour in range(8, 18) %}
+    <div class="week-row">
+
+        <!-- TIME -->
+        <div class="time-col">
+            {{ "%02d:00"|format(hour) }}
+        </div>
+
+        <!-- DAYS -->
+        {% for day in days %}
+
+        {% set lesson = lessons
+            | selectattr("date", "equalto", day)
+            | selectattr("time_from", "ne", none)
+            | selectattr("time_from.hour", "equalto", hour)
+            | first
+        %}
+
+        <div class="slot">
+
+            {% if lesson %}
+                <a
+                    href="/lekcje/{{ lesson.lesson_id }}"
+                    class="lesson-block {{ lesson.type }}"
+                >
+                    <strong>{{ lesson.topic }}</strong>
+                </a>
+            {% else %}
+                {% if role == 'teacher' %}
+                <div
+                    class="slot-add"
+                    onclick="openCreateLesson('{{ day }}', '{{ hour }}')"
+                >
+                    +
+                </div>
+                {% endif %}
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- ===== MODAL: ADD LESSON ===== -->
+<div id="lessonModal" class="modal-overlay hidden">
+    <div class="modal-card">
+
+        <div class="modal-header">
+            <h3>➕ Dodaj lekcję</h3>
+            <button class="modal-close" onclick="closeLessonModal()">✕</button>
+        </div>
+
+        <form method="post" action="/lekcje" class="modal-form">
+            <input type="hidden" name="date" id="modal-date">
+
+            <label>Temat lekcji</label>
+            <input
+                type="text"
+                name="topic"
+                placeholder="np. Funkcja kwadratowa – zadania maturalne"
+                required
+            >
+
+            <div class="modal-time-row">
+                <div>
+                    <label>Od</label>
+                    <input type="time" name="time_from" id="modal-time-from">
+                </div>
+                <div>
+                    <label>Do</label>
+                    <input type="time" name="time_to">
+                </div>
+            </div>
+
+            <label>Komentarz (opcjonalnie)</label>
+            <textarea
+                name="teacher_comment"
+                placeholder="Uwagi, zakres materiału, zapowiedź kartkówki…"
+            ></textarea>
+
+            {% if role == 'teacher' %}
+            <label>Uczniowie</label>
+            <select name="student_ids" multiple class="student-select">
+                {% for s in students %}
+                <option value="{{ s.id }}">
+                    {{ s.imie }} {{ s.nazwisko }}
+                </option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            <button type="submit" class="btn">
+                💾 Zapisz lekcję
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+function openCreateLesson(day, hour) {
+    const modal = document.getElementById("lessonModal");
+    modal.classList.remove("hidden");
+
+    document.getElementById("modal-date").value = day;
+    document.getElementById("modal-time-from").value =
+        String(hour).padStart(2, '0') + ":00";
+}
+
+function closeLessonModal() {
+    document.getElementById("lessonModal").classList.add("hidden");
+}
+</script>
+
+{% endblock %}

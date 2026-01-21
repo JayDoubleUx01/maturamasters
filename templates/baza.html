@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Baza danych – panel administratora</h2>
+
+<form method="post">
+    <textarea name="query" rows="8"
+              placeholder="Wpisz zapytanie SQL..."
+              style="width:100%; font-family:monospace;">{{ query }}</textarea>
+
+    <button type="submit">Wykonaj</button>
+</form>
+
+{% if message %}
+    <p style="color:green;">{{ message }}</p>
+{% endif %}
+
+{% if error %}
+    <p style="color:red;"><strong>Błąd:</strong> {{ error }}</p>
+{% endif %}
+
+{% if result %}
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in result %}
+                <tr>
+                    {% for cell in row %}
+                        <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

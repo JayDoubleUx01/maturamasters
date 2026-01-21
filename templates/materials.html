@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Materiały</h2>
+
+{% if current_user.role == 'teacher' %}
+<a href="{{ url_for('add_material') }}" class="btn">➕ Dodaj materiał</a>
+{% endif %}
+
+<ul class="material-list">
+    {% for m in materials %}
+    <li>
+        <a href="{{ url_for('material_view', material_id=m.id) }}">
+            <strong>{{ m.title }}</strong><br>
+            {{ m.subject }} • {{ m.zakres }} • {{ m.dzial }} • {{ m.material_type }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

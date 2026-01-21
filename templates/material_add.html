@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>➕ Nowy materiał</h2>
+
+<form method="post">
+
+    <input name="title" placeholder="Tytuł" required>
+
+    <select name="subject" required>
+        {% for p in PRZEDMIOTY %}
+        <option value="{{ p }}">{{ p }}</option>
+        {% endfor %}
+    </select>
+    <select name="zakres" required>
+        {% for z in ZAKRESY %}
+        <option value="{{ z }}">{{ z }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="dzial" id="dzialSelect" required></select>
+
+
+    <select name="material_type" id="typeSelect" required>
+        <option value="NOTE">Notatka</option>
+        <option value="VOCABULARY">Słówka</option>
+    </select>
+
+    <!-- NOTATKA -->
+    <div id="noteBox">
+        <textarea name="content" placeholder="Treść notatki"></textarea>
+    </div>
+
+    <!-- SŁÓWKA -->
+    <div id="vocabBox" style="display:none">
+        <div id="vocabList"></div>
+        <button type="button" onclick="addWord()">➕ Dodaj słówko</button>
+    </div>
+
+    <button type="submit">Zapisz</button>
+</form>
+<script>
+    const DZIALY_PRZEDMIOTOW = {{ DZIALY_PRZEDMIOTOW | tojson }};
+</script>
+<script>
+    const subjectSelect = document.querySelector('select[name="subject"]');
+    const dzialSelect = document.getElementById("dzialSelect");
+
+    function updateDzialy() {
+        const subject = subjectSelect.value;
+        dzialSelect.innerHTML = "";
+
+        if (!DZIALY_PRZEDMIOTOW[subject]) return;
+
+        DZIALY_PRZEDMIOTOW[subject].forEach(dzial => {
+            const opt = document.createElement("option");
+            opt.value = dzial;
+            opt.textContent = dzial;
+            dzialSelect.appendChild(opt);
+        });
+    }
+
+    subjectSelect.addEventListener("change", updateDzialy);
+
+    // init przy pierwszym renderze
+    updateDzialy();
+
+
+    // === istniejąca logika typu materiału ===
+    const typeSelect = document.getElementById("typeSelect");
+    const noteBox = document.getElementById("noteBox");
+    const vocabBox = document.getElementById("vocabBox");
+
+    typeSelect.onchange = () => {
+        noteBox.style.display = typeSelect.value === "NOTE" ? "block" : "none";
+        vocabBox.style.display = typeSelect.value === "VOCABULARY" ? "block" : "none";
+    };
+
+    function addWord() {
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <input name="word_en[]" placeholder="EN">
+            <input name="word_pl[]" placeholder="PL">
+            <input name="category[]" placeholder="Dział">
+            <input name="image_url[]" placeholder="URL obrazka">
+            <input name="audio_url[]" placeholder="URL audio">
+            <hr>
+        `;
+        document.getElementById("vocabList").appendChild(div);
+    }
+</script>
+
+
+{% endblock %}

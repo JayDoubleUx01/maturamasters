@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ lesson.topic }}</h2>
+
+<p>
+    📅 {{ lesson.date.strftime('%d.%m.%Y') }}
+    {% if lesson.time_from %}
+    | 🕒 {{ lesson.time_from.strftime('%H:%M') }}
+    {% endif %}
+</p>
+
+{% if lesson.teacher_comment %}
+<div class="lesson-comment">
+    {{ lesson.teacher_comment }}
+</div>
+{% endif %}
+
+<hr>
+
+<h3>📝 Twoja notatka</h3>
+
+<form
+        method="post"
+        action="/lekcje/{{ lesson.id }}/notatka"
+>
+    <textarea
+            name="note"
+            placeholder="Zapisz swoje notatki do tej lekcji…"
+            style="min-height: 160px"
+    >{{ note.note if note else '' }}</textarea>
+
+    <hr>
+
+    <h3>📚 Zadania do tej lekcji</h3>
+
+    {% if tasks %}
+    <ul class="task-list">
+        {% for t in tasks %}
+        <li class="task-item {{ t.status }}">
+            <strong>Zadanie {{ t.numer }}</strong>
+            <span class="task-title">{{ t.title }}</span>
+
+            <span class="task-status">
+            {{ t.status }}
+        </span>
+
+            <a
+                    href="/lekcje/{{ lesson.id }}/zadania/{{ t.id }}"
+                    class="btn-small"
+            >
+                Otwórz
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Brak przypisanych zadań 🎉</p>
+    {% endif %}
+
+    <button class="btn">
+        💾 Zapisz notatkę
+    </button>
+</form>
+
+{% endblock %}

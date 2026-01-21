@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="teacher-panel">
+
+    <div class="teacher-header">
+        <h1>Panel nauczyciela</h1>
+        <p>Zarządzaj użytkownikami i zadaniami</p>
+    </div>
+
+    <div class="teacher-actions">
+        <a href="{{ url_for('assign_view') }}" class="btn">🧩 Przypisz zadania</a>
+    </div>
+
+</div>
+{% endblock %}

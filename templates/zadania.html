@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Baza zadań</h2>
+
+<a class="btn" href="/zadania/dodaj">➕ Dodaj zadanie</a>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Przedmiot</th>
+        <th>Zakres</th>
+        <th>Dział</th>
+        <th>Rok</th>
+        <th>Nr</th>
+        <th>Typ</th>
+        <th>Treść</th>
+        <th></th>
+    </tr>
+    {% for z in zadania %}
+    <tr>
+        <td>{{ z.id }}</td>
+        <td>
+            {% if z.przedmiot == 'polski' %}
+            Język polski
+            {% elif z.przedmiot == 'angielski' %}
+            Język angielski
+            {% elif z.przedmiot == 'matematyka' %}
+            Matematyka
+            {% else %}
+            {{ z.przedmiot }}
+            {% endif %}
+        </td>
+        <td>{{ z.zakres }}</td>
+        <td>{{ z.dzial }}</td>
+        <td>{{ z.rok_arkusza }}</td>
+        <td>{{ z.numer_zadania }}</td>
+        <td>{{ z.typ_zadania }}</td>
+        <td>
+            <div class="task-content">
+                {{ z.tresc }}
+            </div>
+        </td>
+        <td><a href="{{ url_for('teacher_task_preview', zadanie_id=z.id) }}">
+            👁️ Podgląd
+        </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Użytkownicy</h2>
+
+<a class="btn" href="/users/dodaj">➕ Dodaj użytkownika</a>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Imię</th>
+        <th>Nazwisko</th>
+        <th>Login</th>
+        <th>Uprawnienia</th>
+    </tr>
+    {% for u in users %}
+    <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.imie }}</td>
+        <td>{{ u.nazwisko }}</td>
+        <td>{{ u.login }}</td>
+        <td>{{ u.role }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

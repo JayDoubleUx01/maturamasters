@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Logowanie | Matura Master</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-body">
+
+<div class="login-page">
+    <div class="login-card">
+        <h1>Matura Master</h1>
+        <p class="login-subtitle">Zaloguj się do swojego konta</p>
+
+        <form method="post">
+            <input type="text" name="login" placeholder="Login" required>
+            <input type="password" name="password" placeholder="Hasło" required>
+
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+
+            <button type="submit">Zaloguj się</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

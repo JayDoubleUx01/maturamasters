@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Mistrzowie Matury</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon"
+          href="{{ url_for('static', filename='icons/favicon_rmbg.ico') }}">
+
+    <link rel="icon"
+          type="image/png"
+          sizes="96x96"
+          href="{{ url_for('static', filename='icons/favicon-96x96.png') }}">
+
+    <!-- Apple -->
+    <link rel="apple-touch-icon"
+          href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+
+    <meta name="theme-color" content="#d946ef">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+
+    <h1 class="logo">
+        <img class="big_mommy" src="{{ url_for('static', filename='icons/big_icon.png') }}">
+        Mistrzowie Matury
+    </h1>
+
+    <nav class="nav-links">
+        {% if current_user and current_user.role == 'teacher' %}
+        <a href="{{ url_for('dashboard') }}" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Strona główna</span>
+        </a>
+        <a href="{{ url_for('materials') }}" class="nav-item">
+            <span class="nav-icon">📓</span>
+            <span class="nav-label">Materiały</span>
+        </a>
+        <a href="{{ url_for('zadania') }}" class="nav-item">
+            <span class="nav-icon">🗂️</span>
+            <span class="nav-label">Baza zadań</span>
+        </a>
+        <a href="{{ url_for('lekcje') }}" class="nav-item">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Lekcje</span>
+        </a>
+        <a href="{{ url_for('users') }}" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">Uczniowie</span>
+        </a>
+
+        {% elif current_user and current_user.role == 'admin' %}
+        <a href="{{ url_for('dashboard') }}" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Strona główna</span>
+        </a>
+        <a href="{{ url_for('baza_tabele') }}" class="nav-item">
+            <span class="nav-icon">🗄️</span>
+            <span class="nav-label">Baza danych</span>
+        </a>
+        <a href="{{ url_for('baza') }}" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">SQL executor</span>
+        </a>
+
+
+        {% elif current_user and current_user.role == 'student' %}
+        <a href="{{ url_for('dashboard') }}" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Strona główna</span>
+        </a>
+        <a href="{{ url_for('materials') }}" class="nav-item">
+            <span class="nav-icon">📓</span>
+            <span class="nav-label">Materiały</span>
+        </a>
+        <a href="{{ url_for('zadania_ucznia') }}" class="nav-item">
+            <span class="nav-icon">✏️</span>
+            <span class="nav-label">Moje zadania</span>
+        </a>
+        <a href="{{ url_for('lekcje') }}" class="nav-item">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Lekcje</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Statystyki</span>
+        </a>
+
+        {% endif %}
+
+        {% if current_user %}
+        <div class="nav-item nav-bell" id="notifBell">
+            <span class="nav-icon">🔔</span>
+            <span class="nav-label">Powiadomienia</span>
+            <span class="notif-dot" id="notifDot" hidden></span>
+        </div>
+
+        <div class="notif-panel" id="notifPanel" hidden></div>
+        <a href="{{ url_for('profile') }}" class="nav-user">
+            <img
+                    src="{{ url_for('static', filename=current_user_avatar) }}?v={{ current_user.id }}"
+                    class="nav-avatar">
+            {{ current_user.imie }} {{ current_user.nazwisko }} –
+            {{ 'Administrator' if current_user.role == 'admin'
+            else 'Nauczyciel' if current_user.role == 'teacher'
+            else 'Uczeń' }}
+        </a>
+        <a href="{{ url_for('logout') }}">Wyloguj</a>
+        {% endif %}
+    </nav>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script>
+const bell = document.getElementById("notifBell");
+const panel = document.getElementById("notifPanel");
+const dot = document.getElementById("notifDot");
+
+bell?.addEventListener("click", async () => {
+    panel.hidden = !panel.hidden;
+
+    if (!panel.hidden) {
+        const res = await fetch("/notifications");
+        const data = await res.json();
+
+        panel.innerHTML = "";
+
+        let hasUnread = false;
+
+        if (data.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "notif-empty";
+            empty.textContent = "Brak nowych powiadomień";
+            panel.appendChild(empty);
+        } else {
+            data.forEach(n => {
+                const div = document.createElement("div");
+                div.className = "notif-item " + (n.is_read ? "" : "unread");
+                div.innerHTML = `
+                    <div>${n.content}</div>
+                    <div class="notif-date">${n.created_at}</div>
+                `;
+                panel.appendChild(div);
+
+                if (!n.is_read) hasUnread = true;
+            });
+        }
+
+        dot.hidden = !hasUnread;
+
+        await fetch("/notifications/read", { method: "POST" });
+    }
+});
+</script>
+
+</body>
+</html>

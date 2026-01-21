@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>✏️ Edytuj zadanie #{{ zadanie.id }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+
+    <label>Przedmiot</label>
+    <select name="przedmiot" id="przedmiot" required>
+        {% for p in przedmioty %}
+        <option value="{{ p }}"
+            {% if zadanie.przedmiot == p %}selected{% endif %}>
+            {{ p|capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <label>Zakres</label>
+    <select name="zakres" required>
+        {% for z in zakresy %}
+        <option value="{{ z }}"
+            {% if zadanie.zakres == z %}selected{% endif %}>
+            {{ z|capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <label>Dział</label>
+    <select name="dzial" id="dzial" required></select>
+
+    <label>Rodzaj arkusza</label>
+    <select name="rodzaj_arkusza" id="rodzaj_arkusza" required>
+        {% for r, label in {
+            'matura':'Matura',
+            'dodatkowa':'Matura dodatkowa',
+            'poprawkowa':'Matura poprawkowa',
+            'probna':'Matura próbna',
+            'out':'Zadanie spoza arkusza'
+        }.items() %}
+        <option value="{{ r }}"
+            {% if zadanie.rodzaj_arkusza == r %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <div id="arkusz-fields">
+        <label>Rok arkusza</label>
+        <input type="number" name="rok_arkusza"
+               value="{{ zadanie.rok_arkusza or '' }}">
+
+        <label>Numer zadania</label>
+        <input type="number" name="numer_zadania"
+               value="{{ zadanie.numer_zadania or '' }}">
+    </div>
+
+    <label>Typ zadania</label>
+    <select name="typ_zadania" id="typ_zadania">
+        <option value="zamkniete"
+            {% if zadanie.typ_zadania == 'zamkniete' %}selected{% endif %}>
+            Zamknięte
+        </option>
+        <option value="otwarte"
+            {% if zadanie.typ_zadania == 'otwarte' %}selected{% endif %}>
+            Otwarte
+        </option>
+    </select>
+
+    <!-- 🧠 EDYTOR MATEMATYCZNY -->
+    <label>Treść</label>
+
+    <div class="math-toolbar" id="math-toolbar"></div>
+
+    <textarea name="tresc" required>{{ zadanie.tresc }}</textarea>
+
+    <h4>👁 Podgląd zadania</h4>
+    <div id="math-preview" class="task-content"></div>
+
+    <!-- 📎 ZAŁĄCZNIK -->
+    <h3>Załącznik</h3>
+
+    {% if zalacznik %}
+        {% set path = 'uploads/zadania/' ~ zalacznik.nazwa_pliku %}
+        <p>Aktualny:</p>
+        <img src="{{ url_for('static', filename=path) }}"
+             style="max-width:300px">
+    {% endif %}
+
+    <input type="file" name="zalacznik" id="fileInput" accept="image/*">
+    <div id="image-preview"></div>
+
+    <!-- 🔢 ODPOWIEDZI -->
+    <div id="answers-section">
+        <h3>Odpowiedzi (tylko zamknięte)</h3>
+        <input name="odp_a" value="{{ zadanie.odp_a or '' }}" placeholder="A">
+        <input name="odp_b" value="{{ zadanie.odp_b or '' }}" placeholder="B">
+        <input name="odp_c" value="{{ zadanie.odp_c or '' }}" placeholder="C">
+        <input name="odp_d" value="{{ zadanie.odp_d or '' }}" placeholder="D">
+        <input name="poprawna_odp"
+               value="{{ zadanie.poprawna_odp or '' }}"
+               placeholder="Poprawna (A-D)">
+    </div>
+
+    <button type="submit">💾 Zapisz zmiany</button>
+</form>
+
+<script>
+const DZIALY = {{ dzialy_przedmiotow | tojson }};
+const przedmiot = document.getElementById('przedmiot');
+const dzial = document.getElementById('dzial');
+
+function loadDzialy() {
+    dzial.innerHTML = '';
+    (DZIALY[przedmiot.value] || []).forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        if (d === "{{ zadanie.dzial }}") opt.selected = true;
+        dzial.appendChild(opt);
+    });
+}
+
+przedmiot.addEventListener('change', loadDzialy);
+loadDzialy();
+
+document.getElementById('rodzaj_arkusza').addEventListener('change', e => {
+    document.getElementById('arkusz-fields').style.display =
+        e.target.value === 'out' ? 'none' : 'block';
+});
+document.getElementById('arkusz-fields').style.display =
+    "{{ zadanie.rodzaj_arkusza }}" === 'out' ? 'none' : 'block';
+
+// MathJax preview
+const textarea = document.querySelector('textarea[name="tresc"]');
+const preview = document.getElementById('math-preview');
+
+textarea.addEventListener('input', () => {
+    preview.textContent = textarea.value;
+    MathJax.typesetPromise([preview]);
+});
+preview.textContent = textarea.value;
+MathJax.typesetPromise([preview]);
+
+// PASTE IMAGE PREVIEW
+document.addEventListener('paste', e => {
+    const el = document.activeElement;
+    if (!el || el.name !== 'tresc') return;
+
+    for (const item of e.clipboardData.items) {
+        if (item.type.startsWith('image')) {
+            const file = item.getAsFile();
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.style.maxWidth = '300px';
+            image-preview.innerHTML = '';
+            image-preview.appendChild(img);
+            e.preventDefault();
+        }
+    }
+});
+</script>
+
+{% endblock %}

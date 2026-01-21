@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="student-panel">
+
+    <!-- ===== HEADER ===== -->
+    <div class="student-topbar">
+        <div class="student-user">
+        <span class="hello">Witaj,
+        <strong>{{ user.imie }} {{ user.nazwisko }}</strong>
+        </span>
+        </div>
+
+        <a href="/logout" class="btn btn-small">Wyloguj</a>
+    </div>
+
+
+    <!-- ===== LISTA ZADAŃ ===== -->
+    <div class="student-tasks">
+        <h3>📘 Twoje zadania</h3>
+
+        {% if zadania %}
+        <table>
+            <tr>
+                <th>Rok</th>
+                <th>Nr</th>
+                <th>Dział</th>
+                <th>Typ</th>
+                <th>Status</th>
+            </tr>
+            {% for z in zadania %}
+            <tr>
+                <td>{{ z.rok }}</td>
+                <td>
+                    <a href="{{ url_for('resolve_task', zadanie_id=z.id) }}">
+                        {{ z.numer }}
+                    </a>
+                </td>
+                <td>{{ z.dzial }}</td>
+                <td>{{ z.typ }}</td>
+                <td>
+                    {% if z.status == 'do zrobienia' %}
+                    ⏳ Do zrobienia
+                    {% elif z.status == 'zrobione' %}
+                    ✅ Zrobione
+                    {% else %}
+                    {{ z.status }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>🎉 Nie masz jeszcze przypisanych zadań.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

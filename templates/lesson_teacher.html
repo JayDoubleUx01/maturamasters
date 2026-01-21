@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ lesson.topic }}</h2>
+
+<p>
+    📅 {{ lesson.date.strftime('%d.%m.%Y') }}
+    {% if lesson.time_from %}
+    | 🕒 {{ lesson.time_from.strftime('%H:%M') }}
+    {% endif %}
+</p>
+
+{% if lesson.teacher_comment %}
+<div class="lesson-comment">
+    {{ lesson.teacher_comment }}
+</div>
+{% endif %}
+
+<hr>
+
+<h3>📚 Zadania przypisane</h3>
+
+{% if tasks %}
+<ul class="task-list">
+    {% for t in tasks %}
+    <li class="task-item">
+        <strong>Zadanie {{ t.id }}</strong>
+        <span class="task-title">{{ t.title }}</span>
+
+        <form
+                method="post"
+                action="/lekcje/{{ lesson.id }}/zadania/usun"
+                style="display:inline"
+        >
+            <input type="hidden" name="zadanie_id" value="{{ t.id }}">
+            <button class="btn-small danger">Usuń</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Brak przypisanych zadań.</p>
+{% endif %}
+
+<a href="/lekcje/{{ lesson.id }}/zadania" class="btn">
+    ➕ Przypisz zadania
+</a>
+
+{% endblock %}

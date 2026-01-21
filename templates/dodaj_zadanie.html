@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Dodaj zadanie</h2>
+
+<form method="post" enctype="multipart/form-data">
+
+    <label>Przedmiot</label>
+    <select name="przedmiot" id="przedmiot" required>
+        <option value="">-- wybierz przedmiot --</option>
+        {% for p in przedmioty %}
+        <option value="{{ p }}">{{ p|capitalize }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Zakres</label>
+    <select name="zakres" required>
+        <option value="">-- wybierz zakres --</option>
+        {% for z in zakresy %}
+        <option value="{{ z }}">{{ z|capitalize }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Dział</label>
+    <select name="dzial" id="dzial" required>
+        <option value="">-- wybierz dział --</option>
+    </select>
+
+    <label>Rodzaj arkusza</label>
+    <select name="rodzaj_arkusza" id="rodzaj_arkusza" required>
+        <option value="" disabled selected>-- wybierz rodzaj arkusza --</option>
+        <option value="matura">Matura</option>
+        <option value="dodatkowa">Matura dodatkowa</option>
+        <option value="poprawkowa">Matura poprawkowa</option>
+        <option value="probna">Matura próbna</option>
+        <option value="out">Zadanie spoza arkusza</option>
+    </select>
+
+    <div id="arkusz-fields">
+        <label>Rok arkusza</label>
+        <input type="number" name="rok_arkusza" id="rok_arkusza">
+
+        <label>Numer zadania</label>
+        <input type="number" name="numer_zadania" id="numer_zadania">
+    </div>
+
+    <label>Typ zadania</label>
+    <select name="typ_zadania">
+        <option value="zamkniete">Zamknięte</option>
+        <option value="otwarte">Otwarte</option>
+    </select>
+
+    <!-- 🧠 EDYTOR MATEMATYCZNY -->
+    <label>Treść</label>
+
+    <div class="math-toolbar" id="math-toolbar">
+
+        <!-- OPERATORY -->
+        <button type="button" onclick="ins('+')">+</button>
+        <button type="button" onclick="ins('-')">−</button>
+        <button type="button" onclick="ins('\\cdot')">⋅</button>
+        <button type="button" onclick="ins('\\div')">÷</button>
+
+        <br>
+
+        <button type="button" onclick="ins('(')">(</button>
+        <button type="button" onclick="ins(')')">)</button>
+        <button type="button" onclick="ins('⟨')">⟨</button>
+        <button type="button" onclick="ins('⟩')">⟩</button>
+        <button type="button" onclick="ins('[')">[</button>
+        <button type="button" onclick="ins(']')">]</button>
+
+        <br>
+
+        <!-- RELACJE -->
+        <button type="button" onclick="ins('\\leq')">≤</button>
+        <button type="button" onclick="ins('\\geq')">≥</button>
+        <button type="button" onclick="ins('\\neq')">≠</button>
+
+        <br>
+
+        <!-- STRUKTURY -->
+        <button type="button" onclick="ins('\\sqrt{}')">√</button>
+        <button type="button" onclick="ins('\\frac{}{}')">a/b</button>
+        <button type="button" onclick="ins('^{}')">x²</button>
+        <button type="button" onclick="ins('_{}')">x₁</button>
+
+        <br>
+
+        <!-- SYMBOLE -->
+        <button type="button" onclick="ins('\\pi')">π</button>
+        <button type="button" onclick="ins('\\infty')">∞</button>
+        <button type="button" onclick="ins('\\in')">∈</button>
+        <button type="button" onclick="ins('\\subset')">⊂</button>
+
+    </div>
+
+    <textarea name="tresc" required></textarea>
+
+    <!-- 👁 PODGLĄD -->
+    <h4>Podgląd zadania</h4>
+    <div id="math-preview" class="task-content"></div>
+
+    <h3>Załączniki</h3>
+    <input type="file" name="zalacznik" id="fileInput" accept="image/*">
+
+    <div id="image-preview" style="margin-top:10px;"></div>
+
+    <div id="answers-section">
+        <h3>Odpowiedzi (tylko zamknięte)</h3>
+        <input type="text" name="odp_a" placeholder="A">
+        <input type="text" name="odp_b" placeholder="B">
+        <input type="text" name="odp_c" placeholder="C">
+        <input type="text" name="odp_d" placeholder="D">
+        <input type="text" name="poprawna_odp" placeholder="Poprawna (A-D)">
+    </div>
+
+    <button type="submit">Zapisz</button>
+</form>
+
+<script>
+    const DZIALY = {{ dzialy_przedmiotow | tojson }};
+
+    document.getElementById('przedmiot').addEventListener('change', e => {
+        const dzial = document.getElementById('dzial');
+        dzial.innerHTML = '<option value="">-- wybierz dział --</option>';
+        (DZIALY[e.target.value] || []).forEach(d => {
+            dzial.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+    });
+
+    document.getElementById('rodzaj_arkusza').addEventListener('change', e => {
+        const show = e.target.value !== 'out';
+        document.getElementById('arkusz-fields').style.display = show ? 'block' : 'none';
+    });
+
+    function ins(txt) {
+        const t = document.querySelector('textarea[name="tresc"]');
+        const s = t.selectionStart;
+        t.setRangeText(txt, s, t.selectionEnd, 'end');
+
+        if (txt.includes('{}')) {
+            const pos = s + txt.indexOf('{}') + 1;
+            t.setSelectionRange(pos, pos);
+        }
+        t.focus();
+    }
+
+    const textarea = document.querySelector('textarea[name="tresc"]');
+    const preview = document.getElementById('math-preview');
+
+    textarea.addEventListener('input', () => {
+        preview.textContent = textarea.value;
+        MathJax.typesetPromise([preview]);
+    });
+
+        const przedmiotSelect = document.getElementById('przedmiot');
+    const mathToolbar = document.getElementById('math-toolbar');
+
+    function updateMathToolbar() {
+        if (przedmiotSelect.value === 'matematyka') {
+            mathToolbar.style.display = 'block';
+        } else {
+            mathToolbar.style.display = 'none';
+        }
+    }
+
+    przedmiotSelect.addEventListener('change', updateMathToolbar);
+    updateMathToolbar();
+
+    document.addEventListener('paste', function (e) {
+    const el = document.activeElement;
+
+    // reaguj tylko w textarea treści
+    if (!el || el.tagName !== 'TEXTAREA' || el.name !== 'tresc') {
+        return;
+    }
+
+    const clipboard = e.clipboardData || window.clipboardData;
+    if (!clipboard || !clipboard.items) return;
+
+    for (let i = 0; i < clipboard.items.length; i++) {
+        const item = clipboard.items[i];
+
+        if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (!file) return;
+
+            const fileInput = document.getElementById('fileInput');
+            const preview = document.getElementById('image-preview');
+            if (!fileInput || !preview) return;
+
+            // wstawiamy plik do input[type=file]
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            // 👉 PREVIEW OBRAZKA
+            preview.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.style.maxWidth = '300px';
+            img.style.display = 'block';
+            img.style.marginTop = '10px';
+            preview.appendChild(img);
+
+            e.preventDefault();
+            break;
+        }
+    }
+});
+</script>
+{% endblock %}

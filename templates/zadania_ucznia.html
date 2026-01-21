@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if not struktura %}
+<p class="empty-state">🎉 Nie masz jeszcze przypisanych zadań.</p>
+{% else %}
+
+<div class="tasks-layout">
+
+    <!-- ============ FILTRY ============ -->
+    <aside class="filters">
+
+        <h3>Filtry</h3>
+
+        <div class="filter-group" data-group="przedmiot">
+            <h4>Przedmiot</h4>
+            <div class="filter-items"></div>
+        </div>
+
+        <div class="filter-group" data-group="zakres">
+            <h4>Zakres</h4>
+            <div class="filter-items"></div>
+        </div>
+
+        <div class="filter-group" data-group="dzial">
+            <h4>Dział</h4>
+            <div class="filter-items"></div>
+        </div>
+
+        <div class="filter-group" data-group="rodzaj">
+            <h4>Rodzaj arkusza</h4>
+            <div class="filter-items"></div>
+        </div>
+
+        <button id="resetFilters">Wyczyść filtry</button>
+
+    </aside>
+
+    <!-- ============ LISTA ZADAŃ ============ -->
+    <section class="tasks-list" id="tasksList">
+
+        {% for przedmiot, zakresy in struktura.items() %}
+        {% for zakres, dzialy in zakresy.items() %}
+        {% for dzial, zadania in dzialy.items() %}
+        {% for z in zadania %}
+
+        <div class="task-row"
+             data-id="{{ z.id }}"
+             data-przedmiot="{{ przedmiot }}"
+             data-zakres="{{ zakres }}"
+             data-dzial="{{ dzial }}"
+             data-rodzaj="{{ z.rodzaj_arkusza }}">
+
+            <div class="task-left">
+                <strong>Zadanie {{ z.id }}</strong>
+                <div class="task-meta">
+                    {% if przedmiot == 'matematyka' %} Matematyka
+                    {% elif z.przedmiot == 'angielski' %} Język angielski
+                    {% elif z.przedmiot == 'polski' %} Język polski
+                    {% else %} ERROR
+                    {% endif %}
+                    ·
+                    {% if zakres == 'podstawa' %} Zakres podstawowy
+                    {% elif z.zakres == 'rozszerzony' %} Zakres podstawowy
+                    {% else %} ERROR
+                    {% endif %}
+                    · {{ dzial }} ·
+                    {% if z.rodzaj_arkusza == 'matura' %} Matura {{ z.rok_arkusza }}
+                    {% elif z.rodzaj_arkusza == 'out' %} Zadanie spoza arkusza
+                    {% endif %}
+                </div>
+            </div>
+
+            <span class="task-status {{ z.status|replace(' ', '-') }}">
+                {{ z.status }}
+            </span>
+
+            <a href="{{ url_for('resolve_task', zadanie_id=z.id) }}"
+               class="task-action
+          {% if z.status in ['zrobione', 'błędne'] %}
+              preview
+          {% else %}
+              solve
+          {% endif %}">
+                {% if z.status in ['zrobione', 'błędne'] %}
+                Podgląd
+                {% else %}
+                Rozwiąż
+                {% endif %}
+            </a>
+
+        </div>
+
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+
+    </section>
+
+</div>
+
+{% endif %}
+
+<script>
+    const state = {
+        przedmiot: null,
+        zakres: null,
+        dzial: null,
+        rodzaj: null
+    };
+
+    const groups = ['przedmiot', 'zakres', 'dzial', 'rodzaj'];
+    const tasksList = document.getElementById('tasksList');
+    let tasks = Array.from(document.querySelectorAll('.task-row'));
+
+    /* ===== 1️⃣ SORTOWANIE ZADAŃ PO ID ===== */
+    tasks.sort((a, b) => {
+        return Number(a.dataset.id) - Number(b.dataset.id);
+    });
+    tasks.forEach(t => tasksList.appendChild(t));
+
+    /* ===== LOGIKA FILTRÓW ===== */
+
+    function getMatches(tempState = state) {
+        return tasks.filter(t =>
+            groups.every(g => !tempState[g] || t.dataset[g] === tempState[g])
+        );
+    }
+
+    function buildFilters() {
+        groups.forEach(group => {
+            const container = document.querySelector(
+                `.filter-group[data-group="${group}"] .filter-items`
+            );
+            const values = [...new Set(tasks.map(t => t.dataset[group]))];
+
+            container.innerHTML = '';
+
+            values.forEach(val => {
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+                div.dataset.value = val;
+                div.dataset.group = group;
+                container.appendChild(div);
+            });
+        });
+
+        updateFilters();
+    }
+
+    function updateFilters() {
+        groups.forEach(group => {
+            const groupEl = document.querySelector(`.filter-group[data-group="${group}"]`);
+            const items = Array.from(
+                groupEl.querySelectorAll('.filter-item')
+            );
+
+            items.forEach(item => {
+                const value = item.dataset.value;
+                const tempState = { ...state, [group]: value };
+                const count = getMatches(tempState).length;
+
+                item.textContent = `${value} (${count})`;
+                item.dataset.count = count;
+                item.classList.toggle('active', state[group] === value);
+                item.classList.toggle('disabled', count === 0);
+
+                item.onclick = () => {
+                    if (count === 0) return;
+                    state[group] = state[group] === value ? null : value;
+                    apply();
+                };
+            });
+
+            /* ===== sortowanie: (0) na koniec ===== */
+            items
+                .sort((a, b) => Number(b.dataset.count) - Number(a.dataset.count))
+                .forEach(item => item.parentElement.appendChild(item));
+
+            /* ===== ROZWIJANIE / ZWIJANIE ===== */
+            const expanded = groupEl.dataset.expanded === 'true';
+            const limit = 5;
+
+            items.forEach((item, index) => {
+                item.style.display = expanded || index < limit ? 'block' : 'none';
+            });
+
+            // przycisk + / -
+            let toggleBtn = groupEl.querySelector('.filter-toggle');
+
+            if (items.length > limit) {
+                if (!toggleBtn) {
+                    toggleBtn = document.createElement('div');
+                    toggleBtn.className = 'filter-toggle';
+                    groupEl.appendChild(toggleBtn);
+                }
+
+                toggleBtn.textContent = expanded ? '– pokaż mniej' : '+ pokaż więcej';
+                toggleBtn.onclick = () => {
+                    groupEl.dataset.expanded = expanded ? 'false' : 'true';
+                    updateFilters();
+                };
+            } else if (toggleBtn) {
+                toggleBtn.remove();
+            }
+        });
+    }
+
+    function apply() {
+        const matches = getMatches();
+
+        tasks.forEach(t => {
+            t.style.display = matches.includes(t) ? 'flex' : 'none';
+        });
+
+        updateFilters();
+    }
+
+    document.getElementById('resetFilters').onclick = () => {
+        groups.forEach(g => state[g] = null);
+        apply();
+    };
+
+    buildFilters();
+    apply();
+</script>
+
+{% endblock %}

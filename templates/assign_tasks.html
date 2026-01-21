@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>🧩 Przypisywanie zadań</h2>
+
+<form method="post">
+
+    <!-- UCZNIOWIE -->
+    <h3>👥 Uczniowie</h3>
+    {% for u in users %}
+    {% if u.role == 'student' %}
+    <label>
+        <input type="checkbox" name="user_ids" value="{{ u.id }}">
+        {{ u.imie }} {{ u.nazwisko }}
+    </label><br>
+    {% endif %}
+    {% endfor %}
+
+    <hr>
+
+    <!-- TRYB -->
+    <h3>📌 Co przypisać?</h3>
+    <label class="radio-option">
+        <input type="radio" name="mode" value="single" checked>
+        <span>Zadanie</span>
+    </label>
+    <label class="radio-option">
+        <input type="radio" name="mode" value="section">
+        <span>Dział</span>
+    </label>
+    <label class="radio-option">
+        <input type="radio" name="mode" value="all">
+        <span>Wszystkie zadania</span>
+    </label>
+
+    <hr>
+
+    <!-- ZADANIE -->
+    <div id="single-task">
+        <label>📘 Zadanie</label>
+        <select name="zadanie_id">
+            {% for z in zadania %}
+            <option value="{{ z.id }}">
+                {{ z.rok_arkusza }} / {{ z.numer_zadania }} – {{ z.dzial }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="section-task" style="display:none">
+        <label>📂 Dział</label>
+        <select name="dzial">
+            {% for d in dzialy %}
+            <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <br><br>
+
+    <button class="btn">✅ Przypisz zadania</button>
+    <a href="{{ url_for('panel_nauczyciela') }}" class="btn">↩ Powrót</a>
+
+</form>
+
+<!-- ✅ SCRIPT MUSI BYĆ TUTAJ -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const radios = document.querySelectorAll('input[name="mode"]');
+        const single = document.getElementById('single-task');
+        const section = document.getElementById('section-task');
+
+        if (!radios.length || !single || !section) return;
+
+        function updateMode() {
+            const checked = document.querySelector('input[name="mode"]:checked');
+            if (!checked) return;
+
+            single.style.display = 'none';
+            section.style.display = 'none';
+
+            if (checked.value === 'single') {
+                single.style.display = 'block';
+            }
+            if (checked.value === 'section') {
+                section.style.display = 'block';
+            }
+        }
+
+        radios.forEach(r => r.addEventListener('change', updateMode));
+        updateMode();
+    });
+</script>
+
+{% endblock %}

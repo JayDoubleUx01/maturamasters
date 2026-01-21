@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📌 Przypisz zadania do lekcji</h2>
+<p><strong>{{ lesson.topic }}</strong></p>
+
+<form method="post" action="/lekcje/{{ lesson.id }}/zadania">
+
+    <ul class="task-list">
+        {% for z in zadania %}
+        <li class="task-item">
+            <label>
+                <input type="checkbox" name="zadanie_ids" value="{{ z.id }}">
+                {{ z.przedmiot }} – {{ z.dzial }} ({{ z.numer_zadania }})
+            </label>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <button class="btn">
+        💾 Przypisz zadania
+    </button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Panel administratora</h2>
+
+<p>
+    Witaj <strong>{{ current_user.imie }}</strong>.
+    Masz pełny dostęp administracyjny do systemu.
+</p>
+
+<hr>
+
+<section class="admin-section">
+    <h3>🗄 Baza danych</h3>
+    <ul>
+        <li>
+            <a href="{{ url_for('baza') }}">
+                Egzekutor SQL (zaawansowane)
+            </a>
+        </li>
+        <li>
+            <a href="{{ url_for('baza_tabele') }}">
+                Przeglądaj tabele (bezpieczne)
+            </a>
+        </li>
+    </ul>
+</section>
+
+<hr>
+
+<section class="admin-section">
+    <h3>👤 Użytkownicy</h3>
+    <ul>
+        <li>
+            <a href="{{ url_for('users') }}">
+                Lista użytkowników
+            </a>
+        </li>
+        <li>
+            <a href="{{ url_for('dodaj_usera') }}">
+                Dodaj nowego użytkownika
+            </a>
+        </li>
+    </ul>
+</section>
+
+<hr>
+
+<section class="admin-section">
+    <h3>⚙ System</h3>
+    <ul>
+        <li>
+            <span>Rola:</span>
+            <strong>{{ current_user.role }}</strong>
+        </li>
+        <li>
+            <span>ID użytkownika:</span>
+            {{ current_user.id }}
+        </li>
+    </ul>
+</section>
+
+{% endblock %}

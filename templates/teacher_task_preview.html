@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Zadanie {{zadanie.id}}</h2>
+
+<div class="task-box">
+
+    <div class="task-content">
+        {{ zadanie.tresc | safe }}
+    </div>
+
+    {% if zalacznik %}
+        {% set path = 'uploads/zadania/' ~ zalacznik.nazwa_pliku %}
+        <img src="{{ url_for('static', filename=path) }}"
+             class="task-image">
+    {% endif %}
+    {% if zadanie.typ_zadania == 'zamkniete' %}
+    <div class="answers-preview">
+
+        <h3>🔎 Odpowiedzi</h3>
+
+        <ul class="answers-list">
+            {% for key, text in {
+                'A': zadanie.odp_a,
+                'B': zadanie.odp_b,
+                'C': zadanie.odp_c,
+                'D': zadanie.odp_d
+            }.items() %}
+                {% if text %}
+                <li class="
+                    {% if zadanie.poprawna_odp == key %}
+                        correct-answer
+                    {% endif %}
+                ">
+                    <strong>{{ key }}.</strong> {{ text }}
+
+                    {% if zadanie.poprawna_odp == key %}
+                        <span class="badge-correct">✔ poprawna</span>
+                    {% endif %}
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+    </div>
+{% endif %}
+
+    <a href="{{ url_for('edit_task', zadanie_id=zadanie.id) }}"
+       class="btn">
+       ✏️ Edytuj zadanie
+    </a>
+
+</div>
+
+{% endblock %}

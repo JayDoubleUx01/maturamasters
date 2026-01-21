@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="/lekcje/{{ lesson_id }}" class="btn-small">
+    ← Wróć do lekcji
+</a>
+
+<h2>Zadanie {{ zadanie.id }}</h2>
+
+<div class="task-content">
+    {{ zadanie.tresc }}
+</div>
+
+{% if attachments %}
+<div class="task-attachments">
+    {% for a in attachments %}
+    <img
+            src="{{ url_for('static', filename='uploads/zadania/' ~ a.nazwa_pliku) }}"
+            style="max-width:100%; border-radius:12px;"
+    >
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if zadanie.typ_zadania == 'zamkniete' %}
+<form method="post">
+    {% for opt, label in [('A', zadanie.odp_a), ('B', zadanie.odp_b),
+    ('C', zadanie.odp_c), ('D', zadanie.odp_d)] %}
+    <label class="radio-option">
+        <input
+                type="radio"
+                name="answer"
+                value="{{ opt }}"
+                {% if zu and zu.odpowiedz_usera== opt %}checked{% endif %}
+        >
+        {{ opt }}. {{ label }}
+    </label>
+    {% endfor %}
+
+    <button class="btn">💾 Zapisz odpowiedź</button>
+</form>
+
+{% else %}
+<form method="post">
+    <textarea
+            name="answer"
+            placeholder="Twoja odpowiedź…"
+            style="min-height: 160px"
+    >{{ zu.odpowiedz_usera if zu else '' }}</textarea>
+
+    <button class="btn">💾 Zapisz odpowiedź</button>
+</form>
+{% endif %}
+
+{% endblock %}

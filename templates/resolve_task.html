@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a class="task-breadcrumb">
+    {% if zadanie.przedmiot == 'matematyka' %}
+        Matematyka
+    {% elif zadanie.przedmiot == 'polski' %}
+        Język polski
+    {% elif zadanie.przedmiot == 'angielski' %}
+        Język angielski
+    {% endif %}
+    >
+    {% if zadanie.zakres == 'podstawa' %}
+        Zakres podstawowy
+    {% elif zadanie.zakres == 'rozszerzenie' %}
+        Zakres rozszerzony
+    {% endif %}
+    >
+    {{ zadanie.dzial }}
+</a>
+
+<h2>Zadanie {{ zadanie.id }}</h2>
+
+<!-- ===== META AUTORA ===== -->
+<div class="task-meta">
+    <img
+        src="{{ url_for('static', filename=autor_avatar) }}"
+        alt="Avatar autora"
+        class="task-author-avatar"
+    >
+    <div class="task-author-info">
+        <div class="task-author-name">
+            Utworzono przez: {{ zadanie.autor.imie }} {{ zadanie.autor.nazwisko }}
+        </div>
+        <div class="task-author-date">
+            Data utworzenia: {{ zadanie.created_at.strftime('%d.%m.%Y %H:%M') }}
+        </div>
+    </div>
+</div>
+
+<!-- ===== GŁÓWNY BLOK ZADANIA ===== -->
+{% if zalacznik %}
+    {% set file = zalacznik.nazwa_pliku.lower() %}
+    {% set path = 'uploads/zadania/' ~ zalacznik.nazwa_pliku %}
+{% endif %}
+
+<div class="task-box {% if zalacznik and (file.endswith('.png') or file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.webp')) %}task-split{% endif %}">
+
+    <!-- ===== LEWA STRONA: TREŚĆ ===== -->
+    <div class="task-left">
+        <div class="task-content">
+            {{ zadanie.tresc }}
+        </div>
+
+        <!-- ===== TRYB ROZWIĄZYWANIA ===== -->
+        {% if not is_closed %}
+        <div class="answers">
+            {% for key, text in {
+                'A': zadanie.odp_a,
+                'B': zadanie.odp_b,
+                'C': zadanie.odp_c,
+                'D': zadanie.odp_d
+            }.items() %}
+                {% if text %}
+                <label class="answer-option" data-answer="{{ key }}">
+                    <input type="radio" name="answer" value="{{ key }}">
+                    <span><strong>{{ key }}.</strong> {{ text }}</span>
+                </label>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <button id="submit-btn" class="btn">Zatwierdź odpowiedź</button>
+        {% endif %}
+
+        <!-- ===== TRYB PODGLĄDU (ZAMKNIĘTE) ===== -->
+        {% if is_closed %}
+        <div class="answers-preview">
+            <h3>🔒 Zadanie zamknięte</h3>
+
+            <ul class="answers-list">
+                {% for key, text in {
+                    'A': zadanie.odp_a,
+                    'B': zadanie.odp_b,
+                    'C': zadanie.odp_c,
+                    'D': zadanie.odp_d
+                }.items() %}
+                    {% if text %}
+                    <li class="
+                        {% if zadanie.poprawna_odp == key %}correct-answer{% endif %}
+                        {% if assignment.odpowiedz_usera == key and zadanie.poprawna_odp != key %}wrong-answer{% endif %}
+                    ">
+                        <strong>{{ key }}.</strong> {{ text }}
+
+                        {% if zadanie.poprawna_odp == key %}
+                            <span class="badge-correct">✔ poprawna</span>
+                        {% endif %}
+
+                        {% if assignment.odpowiedz_usera == key %}
+                            <span class="badge-user">👤 Twoja odpowiedź</span>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== PRAWA STRONA: OBRAZ ===== -->
+    {% if zalacznik and (file.endswith('.png') or file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.webp')) %}
+    <div class="task-right">
+        <img
+            src="{{ url_for('static', filename=path) }}"
+            alt="Załącznik do zadania"
+            class="task-image"
+        >
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ===== JS (TYLKO GDY MOŻNA ROZWIĄZYWAĆ) ===== -->
+{% if not is_closed %}
+<script>
+    document.getElementById('submit-btn').addEventListener('click', async () => {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (!selected) {
+            alert("Wybierz odpowiedź");
+            return;
+        }
+
+        const response = await fetch(
+            "{{ url_for('submit_task', zadanie_id=zadanie.id) }}",
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer: selected.value })
+            }
+        );
+
+        const data = await response.json();
+
+        document.querySelectorAll('.answer-option').forEach(el => {
+            const val = el.dataset.answer;
+            el.classList.remove('correct', 'wrong');
+
+            if (val === data.correct_answer) {
+                el.classList.add('correct');
+            }
+            if (val === selected.value && !data.correct) {
+                el.classList.add('wrong');
+            }
+        });
+    });
+</script>
+{% endif %}
+
+{% endblock %}
