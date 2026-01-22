@@ -19,7 +19,7 @@ db.init_app(app)
 # =======================
 # INIT DB
 # =======================
-if os.environ.get("RENDER") != "true":
+if os.environ.get("FLASK_ENV") != "production":
     with app.app_context():
         db.create_all()
 
@@ -1412,4 +1412,4 @@ def baza_tabela_podglad(table_name):
 # =====================================================
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
