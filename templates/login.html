@@ -2,14 +2,33 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Logowanie | Matura Master</title>
+    <title>Logowanie | Mistrzowie Matury</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='icons/favicon_rmbg.ico') }}">
+
+    <link rel="icon"
+          type="image/png"
+          sizes="96x96"
+          href="{{ url_for('static', filename='icons/favicon-96x96.png') }}">
+
+    <!-- Apple -->
+    <link rel="apple-touch-icon"
+          href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+
+    <meta name="theme-color" content="#d946ef">
 </head>
 <body class="login-body">
 
 <div class="login-page">
     <div class="login-card">
-        <h1>Matura Master</h1>
+        <img
+            src="{{ url_for('static', filename='icons/big_icon.png') }}"
+            alt="Logo Mistrzowie Matury"
+            class="login-logo"
+        >
+        <h1>Mistrzowie Matury</h1>
         <p class="login-subtitle">Zaloguj się do swojego konta</p>
 
         <form method="post">

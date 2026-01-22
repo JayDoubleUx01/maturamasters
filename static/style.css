@@ -1553,3 +1553,10 @@ input[type="checkbox"] {
     flex-direction: column;
     justify-content: center;
 }
+
+.login-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 16px;
+    border-radius: 12px;
+}
