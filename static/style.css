@@ -21,6 +21,17 @@
     box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+    .login-card {
+        width: 90%;
+        padding: 20px;
+    }
+
+    input, button {
+        font-size: 16px; /* zapobiega zoomowaniu na iOS */
+    }
+}
+
 body {
     margin: 0;
     font-family: 'Inter', system-ui, sans-serif;
@@ -1559,4 +1570,86 @@ input[type="checkbox"] {
     height: auto;
     margin-bottom: 16px;
     border-radius: 12px;
+}
+
+/* ======================================================
+   📱 MOBILE LAYOUT (FINAL)
+   ====================================================== */
+
+.mobile-topbar,
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* 🔴 ukrywamy desktopowy header */
+    header {
+        display: none;
+    }
+
+    /* ===== TOPBAR ===== */
+    .mobile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 56px;
+        background: linear-gradient(135deg, #d946ef, #8b5cf6);
+        color: white;
+        font-weight: 800;
+        font-size: 16px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    /* ===== BOTTOM NAV ===== */
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .mobile-bottom-nav a {
+        font-size: 22px;
+        text-decoration: none;
+        color: #7c3aed;
+        opacity: 0.85;
+        transition: 0.2s;
+    }
+
+    .mobile-bottom-nav a:active {
+        transform: scale(0.9);
+        opacity: 1;
+    }
+
+    /* ===== CONTENT SPACING ===== */
+    main {
+        margin-top: 16px;
+        padding: 0 12px 90px; /* dół pod nav */
+    }
+
+    /* ===== GRIDS → 1 COLUMN ===== */
+    .cards,
+    .student-cards,
+    .tasks-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* ===== TABLES ===== */
+    table {
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 10px;
+    }
 }

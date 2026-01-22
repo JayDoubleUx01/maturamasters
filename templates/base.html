@@ -21,6 +21,7 @@
     <meta name="theme-color" content="#d946ef">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
         window.MathJax = {
             tex: {
@@ -35,7 +36,9 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
-
+<div class="mobile-topbar">
+    <img class="big_mommy" src="{{ url_for('static', filename='icons/big_icon.png') }}"><span class="mobile-title">Mistrzowie Matury</span>
+</div>
 <header class="topbar">
 
     <h1 class="logo">
@@ -134,7 +137,34 @@
 <main>
     {% block content %}{% endblock %}
 </main>
+{% if current_user %}
+<nav class="mobile-bottom-nav">
 
+    {% if current_user.role == 'teacher' %}
+        <a href="{{ url_for('dashboard') }}">🏠</a>
+        <a href="{{ url_for('materials') }}">📓</a>
+        <a href="{{ url_for('zadania') }}">🗂️</a>
+        <a href="{{ url_for('lekcje') }}">📅</a>
+        <a href="{{ url_for('users') }}">👥</a>
+
+    {% elif current_user.role == 'admin' %}
+        <a href="{{ url_for('dashboard') }}">🏠</a>
+        <a href="{{ url_for('baza_tabele') }}">🗄️</a>
+        <a href="{{ url_for('baza') }}">⚙️</a>
+
+    {% elif current_user.role == 'student' %}
+        <a href="{{ url_for('dashboard') }}">🏠</a>
+        <a href="{{ url_for('materials') }}">📓</a>
+        <a href="{{ url_for('vocabulary_all') }}">🗣️</a>
+        <a href="{{ url_for('zadania_ucznia') }}">✏️</a>
+        <a href="{{ url_for('lekcje') }}">📅</a>
+
+    {% endif %}
+
+    <a href="{{ url_for('profile') }}">👤</a>
+
+</nav>
+{% endif %}
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 <script>
 const bell = document.getElementById("notifBell");
@@ -177,6 +207,6 @@ bell?.addEventListener("click", async () => {
     }
 });
 </script>
-
 </body>
+
 </html>
